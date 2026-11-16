@@ -1,0 +1,33 @@
+# ============================================================
+# 星火校园 · 数据层（PostgreSQL + Redis）
+# 映射端口到宿主机，供本地运行的后端连接（开发模式）
+# ============================================================
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-xinghuo}
+      POSTGRES_USER: ${POSTGRES_USER:-xinghuo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-please-change-this-in-dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-xinghuo} -d ${POSTGRES_DB:-xinghuo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

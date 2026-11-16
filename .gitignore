@@ -1,0 +1,49 @@
+# ---- Node / Next.js ----
+node_modules/
+.pnpm-store/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.eslintcache
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- 环境变量与密钥（绝不入库）----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- 运行产物 ----
+logs/
+*.log
+uploads/
+backups/
+data/
+pgdata/
+redisdata/
+
+# ---- 编辑器与系统 ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 构建与打包 ----
+dist/
+build/
+*.zip
+!docs/**/*.zip

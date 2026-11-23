@@ -8,11 +8,14 @@ from app.models.wallet import Wallet
 
 
 def _register(
-    client: TestClient, student_no: str = "20230001", name: str = "张三", password: str = "abc12345"
+    client: TestClient,
+    account: str = "13800138000",
+    password: str = "abc12345",
+    nickname: str = "张三",
 ):
     return client.post(
         "/api/auth/register",
-        json={"student_no": student_no, "name": name, "password": password},
+        json={"account": account, "password": password, "nickname": nickname},
     )
 
 
@@ -21,8 +24,11 @@ def test_register_success(client: TestClient, db_session: Session) -> None:
     assert resp.status_code == 201
     body = resp.json()
     assert body["code"] == "OK"
-    assert body["data"]["student_no"] == "20230001"
+    assert body["data"]["account"] == "13800138000"
+    assert body["data"]["nickname"] == "张三"
     assert body["data"]["verified"] is False
+    assert body["data"]["credit_score"] == 60
+    assert body["data"]["student_no"] is None
     # 注册自动创建钱包（一生一账户）
     wallet = db_session.scalar(select(Wallet).where(Wallet.user_id == body["data"]["id"]))
     assert wallet is not None
@@ -41,27 +47,39 @@ def test_register_weak_password(client: TestClient) -> None:
     assert resp.status_code == 422
 
 
-def test_register_invalid_student_no(client: TestClient) -> None:
-    # 学号含字母，不匹配学号段正则
-    resp = _register(client, student_no="abc")
+def test_register_invalid_account(client: TestClient) -> None:
+    # 非手机号也非邮箱
+    resp = _register(client, account="abc")
+    assert resp.status_code == 422
+
+
+def test_register_invalid_nickname(client: TestClient) -> None:
+    # 昵称长度不足 2 字
+    resp = _register(client, nickname="a")
     assert resp.status_code == 422
 
 
 def test_login_success(client: TestClient) -> None:
     _register(client)
-    resp = client.post("/api/auth/login", json={"student_no": "20230001", "password": "abc12345"})
+    resp = client.post("/api/auth/login", json={"account": "13800138000", "password": "abc12345"})
     assert resp.status_code == 200
     assert resp.json()["code"] == "OK"
     assert resp.cookies.get("access_token") is not None
 
 
+def test_login_with_email(client: TestClient) -> None:
+    _register(client, account="a@b.edu.cn")
+    resp = client.post("/api/auth/login", json={"account": "a@b.edu.cn", "password": "abc12345"})
+    assert resp.status_code == 200
+
+
 def test_login_wrong_password(client: TestClient) -> None:
     _register(client)
-    resp = client.post("/api/auth/login", json={"student_no": "20230001", "password": "wrongpass1"})
+    resp = client.post("/api/auth/login", json={"account": "13800138000", "password": "wrongpass1"})
     assert resp.status_code == 401
     assert resp.json()["code"] == "UNAUTHORIZED"
 
 
 def test_login_user_not_found(client: TestClient) -> None:
-    resp = client.post("/api/auth/login", json={"student_no": "99999999", "password": "abc12345"})
+    resp = client.post("/api/auth/login", json={"account": "13900139000", "password": "abc12345"})
     assert resp.status_code == 401

@@ -1,6 +1,6 @@
 """双向评价模型。"""
 
-from sqlalchemy import ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -20,3 +20,5 @@ class Review(Base, TimestampMixin, SoftDeleteMixin):
     to_user: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 是否超期评价
+    is_late: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

@@ -91,6 +91,8 @@ class VerifyService:
         if approve:
             record.status = VerifyStatus.APPROVED.value
             user.verified = True
+            user.student_no = record.student_no
+            user.name = record.name
             user.college = record.college
             user.major = record.major
             user.grade = record.grade
@@ -104,7 +106,7 @@ class VerifyService:
                 action="verify_review",
                 target_type="student_verify",
                 target_id=record.id,
-                detail="approve" if approve else "reject",
+                detail={"result": "approve"} if approve else {"result": "reject"},
             )
         )
         return record

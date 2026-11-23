@@ -1,6 +1,6 @@
 """私聊消息模型。"""
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -15,7 +15,9 @@ class Message(Base, TimestampMixin, SoftDeleteMixin):
         ForeignKey("chat_session.id"), nullable=False, index=True
     )
     sender_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    # text / image
-    type: Mapped[str] = mapped_column(String(16), nullable=False, default="text")
+    # TEXT / IMAGE
+    type: Mapped[str] = mapped_column(String(16), nullable=False, default="TEXT")
     content: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # 对方是否已读
+    read_flag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

@@ -3,7 +3,17 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, Numeric, String, Text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    SmallInteger,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -19,11 +29,17 @@ class Task(Base, TimestampMixin, SoftDeleteMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     publisher_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
+    category: Mapped[str] = mapped_column(String(16), nullable=False)
     title: Mapped[str] = mapped_column(String(128), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    category: Mapped[str] = mapped_column(String(32), nullable=False)
     # 金额一律 DECIMAL(10,2)，Python 侧 Decimal，禁止 float
     reward: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    # 地点，可填「线上」
+    place: Mapped[str] = mapped_column(String(80), nullable=False)
     deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    # open / closed（任务开放状态，区别于订单状态机）
+    # open / assigned / cancelled（任务层面的粗状态）
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="OPEN")
+    # 有效申请人数（计数冗余，由应用层维护）
+    apply_count: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
+    # 是否由 AI 草稿生成
+    ai_draft: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

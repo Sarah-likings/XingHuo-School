@@ -2,6 +2,7 @@
 
 订单状态、任务分类、错误码等枚举**只在本文件定义一处**，前后端都从它派生，
 禁止在业务代码里写字符串字面量。前端对应 `apps/web/lib/constants.ts`（由后端导出/生成）。
+取值与《数据库设计说明书》4.1.14 节枚举字典一致。
 """
 
 from enum import StrEnum
@@ -17,7 +18,7 @@ class Role(StrEnum):
 class OrderStatus(StrEnum):
     """订单状态机 7 个状态（唯一入口 services/order_service.transition）。"""
 
-    OPEN = "OPEN"  # 待接单
+    OPEN = "OPEN"  # 待接单（申请中）
     ASSIGNED = "ASSIGNED"  # 已选定接单人（资金冻结）
     DELIVERED = "DELIVERED"  # 已交付（等待验收）
     COMPLETED = "COMPLETED"  # 已完成（已结算）
@@ -27,19 +28,22 @@ class OrderStatus(StrEnum):
 
 
 class TaskStatus(StrEnum):
-    """任务在任务大厅的开放状态（区别于订单状态机）。"""
+    """任务层面的粗状态（区别于订单状态机）。"""
 
-    OPEN = "OPEN"  # 待接单（大厅可见）
-    CLOSED = "CLOSED"  # 已关闭（已选定接单人 / 已取消）
+    OPEN = "OPEN"  # 待接单（申请中，大厅可见）
+    ASSIGNED = "ASSIGNED"  # 已选定接单人
+    CANCELLED = "CANCELLED"  # 已取消
 
 
 class TaskCategory(StrEnum):
-    """任务分类。"""
+    """任务分类（6 类）。"""
 
     EXPRESS = "EXPRESS"  # 快递代拿
-    TUTORING = "TUTORING"  # 课程辅导
-    TECH = "TECH"  # 电脑维修
-    LIFE = "LIFE"  # 生活互助
+    TUTOR = "TUTOR"  # 课程辅导
+    REPAIR = "REPAIR"  # 电脑维修
+    PRINT = "PRINT"  # 资料打印
+    ERRAND = "ERRAND"  # 跑腿
+    OTHER = "OTHER"  # 其他
 
 
 class VerifyStatus(StrEnum):
@@ -53,24 +57,26 @@ class VerifyStatus(StrEnum):
 class FundFlowType(StrEnum):
     """资金流水类型（fund_flow 只增不改）。"""
 
-    RECHARGE = "RECHARGE"  # 管理员入账
+    RECHARGE = "RECHARGE"  # 充值（管理员入账）
     FREEZE = "FREEZE"  # 担保冻结
     SETTLE = "SETTLE"  # 验收打款
     REFUND = "REFUND"  # 退款
+    CLEAR = "CLEAR"  # 清算
 
 
 class MessageType(StrEnum):
     """私聊消息类型。"""
 
-    TEXT = "text"
-    IMAGE = "image"
+    TEXT = "TEXT"
+    IMAGE = "IMAGE"
 
 
 class ReportStatus(StrEnum):
     """举报 / 申诉处理状态。"""
 
     PENDING = "PENDING"  # 待处理
-    RESOLVED = "RESOLVED"  # 已处理
+    DECIDED = "DECIDED"  # 已裁决
+    REJECTED = "REJECTED"  # 已驳回
 
 
 class PostAuditStatus(StrEnum):
@@ -97,3 +103,4 @@ class ErrorCode(StrEnum):
     VALIDATION_FAILED = "VALIDATION_FAILED"
     TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS"
     INTERNAL_ERROR = "INTERNAL_ERROR"
+    SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"

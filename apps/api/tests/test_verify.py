@@ -28,13 +28,13 @@ def _make_png() -> bytes:
 
 
 def _register_and_login(
-    client: TestClient, student_no: str = "20230001", password: str = "abc12345"
+    client: TestClient, account: str = "13800138000", password: str = "abc12345"
 ) -> dict[str, str]:
     client.post(
         "/api/auth/register",
-        json={"student_no": student_no, "name": "张三", "password": password},
+        json={"account": account, "password": password, "nickname": "张三"},
     )
-    resp = client.post("/api/auth/login", json={"student_no": student_no, "password": password})
+    resp = client.post("/api/auth/login", json={"account": account, "password": password})
     return dict(resp.cookies)
 
 
@@ -86,17 +86,17 @@ def test_full_verify_flow(client: TestClient, db_session: Session, monkeypatch) 
 
     # 创建管理员并登录
     admin = User(
-        student_no="admin001",
-        name="管理员",
+        account="admin001",
+        nickname="管理员",
         password_hash=hash_password("admin12345"),
         role="admin",
         verified=True,
-        credit_score=100,
+        credit_score=60,
     )
     db_session.add(admin)
     db_session.commit()
     admin_login = client.post(
-        "/api/auth/login", json={"student_no": "admin001", "password": "admin12345"}
+        "/api/auth/login", json={"account": "admin001", "password": "admin12345"}
     )
     admin_cookies = dict(admin_login.cookies)
 
@@ -107,8 +107,10 @@ def test_full_verify_flow(client: TestClient, db_session: Session, monkeypatch) 
     assert resp.status_code == 200
     assert resp.json()["data"]["status"] == "APPROVED"
 
-    # 用户 verified 置为 True，并同步学院/专业/年级
-    user = db_session.scalar(select(User).where(User.student_no == "20230001"))
+    # 用户 verified 置 True，并回填学号/姓名/学院/专业/年级
+    user = db_session.scalar(select(User).where(User.account == "13800138000"))
     assert user is not None
     assert user.verified is True
+    assert user.student_no == "20230001"
+    assert user.name == "张三"
     assert user.college == "计算机学院"

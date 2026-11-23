@@ -15,13 +15,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", status_code=201, summary="注册")
 def register(data: RegisterRequest, db: Session = Depends(get_db)) -> dict:
-    user = AuthService(db).register(data.student_no, data.name, data.password)
+    user = AuthService(db).register(data.account, data.password, data.nickname)
     return success(data=UserOut.model_validate(user).model_dump())
 
 
 @router.post("/login", summary="登录（签发 JWT httpOnly Cookie）")
 def login(data: LoginRequest, response: Response, db: Session = Depends(get_db)) -> dict:
-    user = AuthService(db).login(data.student_no, data.password)
+    user = AuthService(db).login(data.account, data.password)
     token = create_access_token(user.id, user.role, user.verified)
     response.set_cookie(
         key="access_token",

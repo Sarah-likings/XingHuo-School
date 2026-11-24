@@ -1,0 +1,52 @@
+# ============================================================
+# 星火校园 · 代码质量工具配置（ruff / black / pytest）
+# ============================================================
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle 错误
+    "W",   # pycodestyle 警告
+    "F",   # pyflakes
+    "I",   # isort 导入排序
+    "N",   # pep8 命名
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # 简化（comprehension）
+]
+ignore = [
+    "E501",  # 行长度交给 black 处理
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI 依赖注入（Depends/Form/File 等）是标准模式，不作为 B008 告警
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Form",
+    "fastapi.File",
+    "fastapi.Header",
+    "fastapi.Cookie",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = "alembic/versions"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient`",
+]
